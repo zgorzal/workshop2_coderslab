@@ -11,7 +11,7 @@ public class UserDao {
             "INSERT INTO users(username, email, password) VALUES (?, ?, ?)";
 
     private static final String READ_USER_QUERY =
-            "SELECT id, email, username, password  FROM users WHERE id = ?";
+            "SELECT * FROM users WHERE id = ?";
 
     private static final String UPDATE_USER_QUERY =
             "UPDATE users SET email = ?, username = ?, password = ? WHERE id = ?";
