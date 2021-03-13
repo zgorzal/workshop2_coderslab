@@ -65,7 +65,17 @@ public class UserDao {
             statement.setString(1, user.getEmail());
             statement.setString(2, user.getUserName());
             statement.setString(3, hashPassword(user.getPassword()));
-            statement.setInt(4,user.getId());
+            statement.setInt(4, user.getId());
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void delete(int userId) {
+        try (Connection conn = DbUtil.getConnection()) {
+            PreparedStatement statement = conn.prepareStatement(DELETE_USER_QUERY);
+            statement.setInt(1, userId);
             statement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
