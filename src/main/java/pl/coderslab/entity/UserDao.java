@@ -1,6 +1,5 @@
 package pl.coderslab.entity;
 
-import org.mindrot.jbcrypt.BCrypt;
 
 import java.sql.*;
 import java.util.Arrays;
@@ -22,16 +21,12 @@ public class UserDao {
     private static final String FIND_ALL_USER_QUERY =
             "SELECT * FROM users;";
 
-    public String hashPassword(String password) {
-        return BCrypt.hashpw(password, BCrypt.gensalt());
-    }
-
     public User create(User user) {
         try (Connection conn = DbUtil.getConnection()) {
             PreparedStatement statement = conn.prepareStatement(CREATE_USER_QUERY, Statement.RETURN_GENERATED_KEYS);
             statement.setString(1, user.getUserName());
             statement.setString(2, user.getEmail());
-            statement.setString(3, hashPassword(user.getPassword()));
+            statement.setString(3, user.getPassword());
             statement.executeUpdate();
             ResultSet resultSet = statement.getGeneratedKeys();
             if (resultSet.next()) {
@@ -49,14 +44,15 @@ public class UserDao {
             PreparedStatement statement = conn.prepareStatement(READ_USER_QUERY);
             statement.setInt(1, userId);
             ResultSet resultSet = statement.executeQuery();
-            User user = new User();
+
             if (resultSet.next()) {
-                user.setId(resultSet.getInt("id"));
-                user.setUserName(resultSet.getString("username"));
-                user.setEmail(resultSet.getString("email"));
-                user.setPassword(resultSet.getString("password"));
+                User user = new User(resultSet.getInt("id"),
+                        resultSet.getString("username"),
+                        resultSet.getString("email"),
+                        resultSet.getString("password"));
+                return user;
             }
-            return user;
+            return null;
         } catch (SQLException e) {
             e.printStackTrace();
             return null;
@@ -68,7 +64,7 @@ public class UserDao {
             PreparedStatement statement = conn.prepareStatement(UPDATE_USER_QUERY);
             statement.setString(1, user.getEmail());
             statement.setString(2, user.getUserName());
-            statement.setString(3, hashPassword(user.getPassword()));
+            statement.setString(3, user.getPassword());
             statement.setInt(4, user.getId());
             statement.executeUpdate();
         } catch (SQLException e) {
@@ -98,11 +94,10 @@ public class UserDao {
             PreparedStatement statement = conn.prepareStatement(FIND_ALL_USER_QUERY);
             ResultSet resultSet = statement.executeQuery();
             while (resultSet.next()) {
-                User user = new User();
-                user.setId(resultSet.getInt("id"));
-                user.setEmail(resultSet.getString("email"));
-                user.setUserName(resultSet.getString("username"));
-                user.setPassword(resultSet.getString("password"));
+                User user = new User(resultSet.getInt("id"),
+                        resultSet.getString("email"),
+                        resultSet.getString("username"),
+                        resultSet.getString("password"));
                 users = addToArray(user, users);
             }
             return users;
